@@ -12,6 +12,9 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 
 import java.awt.*;
@@ -55,4 +58,51 @@ public class BookStoreServiceTests {
                 .andExpect(jsonPath("$[0].author").value("TestAuthor"))
                 .andExpect(jsonPath("$[0].publicationYear").value(2024));
     }
+
+    @Test
+    public void shouldReturnBookById_whenIdExists() throws Exception {
+        when(bookStoreService.findById(1L)).thenReturn(book);
+        mockMvc.perform(get("/api/v1/bookstore/1")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.title").value("TestBook"))
+                .andExpect(jsonPath("$.author").value("TestAuthor"))
+                .andExpect(jsonPath("$.publicationYear").value(2024));
+    }
+
+    @Test
+    public void shouldSaveBook_whenBookIsValid() throws Exception {
+        when(bookStoreService.save(any(Book.class))).thenReturn(book);
+        mockMvc.perform(post("/api/v1/bookstore")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"title\": \"TestBook\", \"author\": \"TestAuthor\", \"publicationYear\": 2024}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.title").value("TestBook"))
+                .andExpect(jsonPath("$.author").value("TestAuthor"))
+                .andExpect(jsonPath("$.publicationYear").value(2024));
+    }
+
+    @Test
+    public void shouldUpdateBook_whenBookIsValid() throws Exception {
+        when(bookStoreService.updateBook(any(Book.class))).thenReturn(book);
+        mockMvc.perform(put("/api/v1/bookstore")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"id\": 1, \"title\": \"UpdatedBook\", \"author\": \"UpdatedAuthor\", \"publicationYear\": 2025}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.title").value("TestBook"))
+                .andExpect(jsonPath("$.author").value("TestAuthor"))
+                .andExpect(jsonPath("$.publicationYear").value(2024));
+    }
+
+    @Test
+    public void shouldDeleteBook_whenIdExists() throws Exception {
+        doNothing().when(bookStoreService).deleteById(1L);
+        mockMvc.perform(delete("/api/v1/bookstore/1")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNoContent());
+    }
+
 }

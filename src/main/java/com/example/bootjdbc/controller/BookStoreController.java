@@ -24,9 +24,9 @@ public class BookStoreController {
     }
 
     @PostMapping
-    public ResponseEntity<Book> save(@ RequestBody Book book) {
+    public ResponseEntity<Book> save(@RequestBody Book book) {
         Book savedBook = bookStoreService.save(book);
-        return ResponseEntity.ok(book);
+        return ResponseEntity.ok(savedBook);
     }
 
     @GetMapping("/{id}")
